@@ -28,5 +28,9 @@ interface IFluid{
     function feeRecipient()  external view returns (address);
 
 
+    function autoWithdrawAccount() external view returns(address);
+
+
+    function autoWithdrawFeeForOnce() external view returns(uint256);
 
 }
