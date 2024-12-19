@@ -16,6 +16,9 @@ library Struct{
     address tokenAddress;
     uint256 interval;
     uint256 createAt;
+    bool isEntity;
+    bool closed;
+    address onBehalfOf;
 
  }
 

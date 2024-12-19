@@ -11,6 +11,8 @@ import {IFluid} from "./interfaces/IFluid.sol";
 
 contract Stream is IFluid,Ownable,ReentrancyGuard
 {
+   using SafeERC20 for IERC20;
+
 
    /**
    * @notice counter for  new streamIDs
@@ -19,8 +21,8 @@ contract Stream is IFluid,Ownable,ReentrancyGuard
     uint256 nextStreamId;
 
     address _feeRecipient;
-    address _autoWithdrawAccount;
-    uint256 _autoWithdrawFeeForOnce;
+    address _autoClaimAccount;
+    uint256 _autoClaimFeeForOnce;
 
 
       /* ============ MAPPINGS ============ */
@@ -32,25 +34,113 @@ contract Stream is IFluid,Ownable,ReentrancyGuard
 
 
 
+ /* ============ MODIFIERS============ */
+
+/** 
+ *@dev throw  if the proivided StreamId does not exists or its not valid
+ */
+
+modifier streamExists(uint256 streamId){
+  require(_streams[streamId].isEntity,"stream does not exist");
+  _;
+}
 
 
-       /* ============ EVENTS============ */
 
-       event 
+
+
+     /* ============ EVENTS============ */
+    
+    /**
+      *@notice emits when an token is registered sucessfully
+     */
+
+    event tokenRegister(address indexed tokenAddress , uint256 feeRate);
+
+    /**
+    *@notice emits when a new stream is created
+     */
+    event CreateStream(
+
+        uint256 indexed streamId,
+        address indexed sender,
+        address indexed recipient,
+        uint256 deposit,
+        address tokenAddress,
+        uint256 startTime,
+        uint256 stopTime,
+        uint256 interval,
+        uint256 cliffAmount,
+        uint256 cliffTime,
+        uint256 autoClaimInterval,
+        bool autoClaim
+    ); 
+
+
+    /**
+    *@notice emits when  the recipient of  a stream withdraws from the stream
+     */
+
+     event WithdrawFromStream(
+      uint256 indexed streamId,
+      address indexed operator,
+      uint256 recipientBalance;
+     )
+
+
+    /**
+    *@notice emits  when a stream is closed
+     */
+     event CloseStream(
+      uint256 streamId,
+      address indexed operator,
+      uint256 recipientBalance,
+      uint256 senderBalance
+     );
+
+
+     /**
+        *@notice emits when a stream is paused
+      */
+
+      event PauseStream(
+        uint256 indexed streamId,
+        address indexed operator,
+        uint256 recipientBalance
+      );
+
+      /**
+        *@notice when a  stream is resumed
+       */
+       event ResumeStream(
+        uint256 indexed streamId,
+        address indexed operator,
+        uint256 duration
+       );
+
+
+       /**
+     * @notice Emits when the recipient of a stream is successfully changed.
+     */
+      event setNewRecipient(
+        uint256 streamId,
+        address  operator,
+        uint256 newRecipient
+      )
 
 
    /* =========== Constructor ============ */
   constructor(
     address owner_,
     address feeRecipient_,
-    address autoWithdrawAccount_,
-    uint256 autoWithdrawFeeForOnce_
+    address autoClaimAccount_,
+    uint256 autoClaimFeeForOnce_
   )Ownable(owner_) 
   ReentrancyGuard() {
     transferOwnership(owner_);
     _feeRecipient = feeRecipient_;
-    _autoWithdrawAccount = autoWithdrawAccount_;
-    _autoWithdrawFeeForOnce = autoWithdrawFeeForOnce_
+    _autoClaimAccount = autoClaimAccount_;
+    _autoClaimFeeForOnce = autoClaimFeeForOnce_
     nextStreamId = 100000;
   }
 
@@ -63,13 +153,13 @@ contract Stream is IFluid,Ownable,ReentrancyGuard
     }
 
 
-     function  autoWithdrawAccount() external view override returns(address){
-      return _autoWithdrawAccount;
+     function  autoClaimAccount() external view override returns(address){
+      return _autoClaimAccount;
      }
 
 
-     function autowithdrawFeeForOnce() external veiw override returns(uint256){
-      return _autoWithdrawFeeForOnce;
+     function autoClaimFeeForOnce() external veiw override returns(uint256){
+      return _autoClaimFeeForOnce;
      }
   
 

@@ -6,8 +6,14 @@
     "hardhat-deploy": "^0.14.0"
   },
   "scripts": {
-    
-  },
+      "test": "npx hardhat test",
+      "compile": "npx hardhat compile",
+      "coverage": "npx hardhat coverage",
+      "gas-test": "REPORT_GAS=true npx hardhat test",
+      "verify": "npx hardhat verify",
+      "deploy": "hardhat run deploy/deploy.ts"
+    },
+ 
   "dependencies": {
     "@openzeppelin/contracts": "^5.1.0",
     "dotenv": "^16.4.7"
