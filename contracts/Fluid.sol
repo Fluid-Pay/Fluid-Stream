@@ -7,6 +7,7 @@ import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import {IFluid} from "./interfaces/IFluid.sol";
+import {Struct} from "./libraries/Struct.sol";
 
 
 contract Stream is IFluid,Ownable,ReentrancyGuard
@@ -84,8 +85,8 @@ modifier streamExists(uint256 streamId){
      event WithdrawFromStream(
       uint256 indexed streamId,
       address indexed operator,
-      uint256 recipientBalance;
-     )
+      uint256 recipientBalance
+     );
 
 
     /**
@@ -126,7 +127,7 @@ modifier streamExists(uint256 streamId){
         uint256 streamId,
         address  operator,
         uint256 newRecipient
-      )
+      );
 
 
    /* =========== Constructor ============ */
@@ -140,15 +141,21 @@ modifier streamExists(uint256 streamId){
     transferOwnership(owner_);
     _feeRecipient = feeRecipient_;
     _autoClaimAccount = autoClaimAccount_;
-    _autoClaimFeeForOnce = autoClaimFeeForOnce_
+    _autoClaimFeeForOnce = autoClaimFeeForOnce_;
     nextStreamId = 100000;
   }
 
+
+
+
+
+     
+     
      /* =========== View Functions  ============ */
 
     function tokenFeeRate(address tokenAddress) external view override returns(uint256){
      require(_tokenAllowed[tokenAddres],"token not registered");
-      returns _tokenFeeRate[tokenAddress];
+      return _tokenFeeRate[tokenAddress];
 
     }
 
@@ -168,12 +175,64 @@ modifier streamExists(uint256 streamId){
       return  _feeRecipient;
      }
   
-
+ 
      function getStream(uint256 streamId) external view override returns(Struct.Stream memory){
-      returns _streams[Struct.Stream];
+      return _streams[streamId];
      }
+  
+
+     /* =========== Main Functions  ============ */
 
 
+      function tokenRegister(address tokenAddress, uint256 feeRate) public onlyOwner returns(){
+
+      }
+
+
+      function deltaOf();
+
+
+
+
+
+      function balanceOf();
+
+
+      function createStream();
+
+      function pauseStream();
+
+
+      function resumeStream();
+
+      function withdrawFromStream();
+
+      function extendStream();
+
+      function closeStream();
+
+
+
+
+
+     /* ==========  Setter Functions  ============ */
+
+
+      function setNewRecipient();
+
+      
+
+      function setAutoClaimAccount();
+
+
+
+      function setAutoFeeForOnce()
+
+ 
+
+    
+
+     
 
 
 }

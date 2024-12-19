@@ -19,6 +19,7 @@ library Struct{
     bool isEntity;
     bool closed;
     address onBehalfOf;
+    bool autoClaim;
 
  }
 
