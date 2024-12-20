@@ -4,6 +4,27 @@ pragma solidity ^0.8.28;
 library Struct {
 
     /**
+     *@notice Defines the roles an operator can have in relation to a stream.
+   */
+    enum StreamOperatorRole {
+    None,       
+    Sender,
+    Recipient,
+    Both
+    }
+
+
+
+   /**
+    * @notice Defines the settings for stream features, including who can pause, close, or modify the recipient of a stream.
+    */
+    struct StreamFeature {
+    StreamOperatorRole pauseable;
+    StreamOperatorRole closeable;
+    StreamOperatorRole recipientModifiable;
+}
+
+    /**
      *@notice  Represents a stream of funds.
      */
     struct Stream {
@@ -21,6 +42,8 @@ library Struct {
         bool autoClaim;
     }
 
+
+
     /**
      * @notice Parameters for creating a new stream.
      */
@@ -34,5 +57,14 @@ library Struct {
         uint256 interval;
         uint256 cliffTime;
         uint256 cliffAmount;
-    }
+        bool autoClaim;
+        uint256 autoClaimInterval;
+        StreamOperatorRole pauseable;
+        StreamOperatorRole closeable;
+        StreamOperatorRole recipientModifiable;
 }
+        
+
+    }
+
+

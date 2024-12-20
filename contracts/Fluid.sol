@@ -2,14 +2,14 @@
 pragma solidity ^0.8.28;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import {ReentrancyGuard} from '@openzeppelin/contracts/utils/ReentrancyGuard.sol';
+import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import {IFluid} from "./interfaces/IFluid.sol";
 import {Struct} from "./libraries/Struct.sol";
 
-contract Fluid is IFluid, Ownable, ReentrancyGuard {
+contract Fluid is Ownable, ReentrancyGuard, IFluid {
     using SafeERC20 for IERC20;
 
     uint256 public nextStreamId;
@@ -21,17 +21,14 @@ contract Fluid is IFluid, Ownable, ReentrancyGuard {
     mapping(address => uint256) private _tokenFeeRate;
     mapping(uint256 => Struct.Stream) private _streams;
 
-        /* ============ MODIFIERS============ */
+    /* ============ MODIFIERS============ */
 
     modifier streamExists(uint256 streamId) {
         require(_streams[streamId].isEntity, "stream does not exist");
         _;
     }
 
-
-
-
-        /* ============ EVENTS ============ */
+    /* ============ EVENTS ============ */
     event TokenRegistered(address indexed tokenAddress, uint256 feeRate);
     event CreateStream(
         uint256 indexed streamId,
@@ -74,11 +71,7 @@ contract Fluid is IFluid, Ownable, ReentrancyGuard {
         address newRecipient
     );
 
-
-
-
-
-        /* ============ CONSTRUCTOR ============ */
+    /* ============ CONSTRUCTOR ============ */
     constructor(
         address owner_,
         address feeRecipient_,
@@ -92,10 +85,11 @@ contract Fluid is IFluid, Ownable, ReentrancyGuard {
         nextStreamId = 100000;
     }
 
+    /* ============ VIEW FUNCTIONS ============ */
 
-        /* ============ VIEW FUNCTIONS ============ */
-
-    function tokenFeeRate(address tokenAddress) external view override returns (uint256) {
+    function tokenFeeRate(
+        address tokenAddress
+    ) external view returns (uint256) {
         require(_tokenAllowed[tokenAddress], "token not registered");
         return _tokenFeeRate[tokenAddress];
     }
@@ -112,16 +106,17 @@ contract Fluid is IFluid, Ownable, ReentrancyGuard {
         return _feeRecipient;
     }
 
-    function getStream(uint256 streamId) external view override returns (Struct.Stream memory) {
+    function getStream(
+        uint256 streamId
+    ) external view override returns (Struct.Stream memory) {
         return _streams[streamId];
     }
 
-
-
-
-
-            /* ============ MAIN FUNCTIONS ============ */
-    function tokenRegister(address tokenAddress, uint256 feeRate) public onlyOwner {
+    /* ============ MAIN FUNCTIONS ============ */
+    function tokenRegister(
+        address tokenAddress,
+        uint256 feeRate
+    ) public onlyOwner {
         require(!_tokenAllowed[tokenAddress], "token already registered");
         _tokenAllowed[tokenAddress] = true;
         _tokenFeeRate[tokenAddress] = feeRate;
@@ -129,6 +124,7 @@ contract Fluid is IFluid, Ownable, ReentrancyGuard {
     }
 
     function createStream(
+        address sender,
         address recipient,
         uint256 deposit,
         address tokenAddress,
@@ -143,15 +139,15 @@ contract Fluid is IFluid, Ownable, ReentrancyGuard {
         require(_tokenAllowed[tokenAddress], "token not registered");
         uint256 streamId = nextStreamId++;
         _streams[streamId] = Struct.Stream(
-            true,
-            recipient,
+             sender,
+             recipient,
             deposit,
             tokenAddress,
             startTime,
             stopTime,
             interval,
-            cliffAmount,
             cliffTime,
+            cliffAmount,
             autoClaimInterval,
             autoClaim
         );
@@ -173,7 +169,11 @@ contract Fluid is IFluid, Ownable, ReentrancyGuard {
 
     function pauseStream(uint256 streamId) public streamExists(streamId) {
         _streams[streamId].paused = true;
-        emit PauseStream(streamId, msg.sender, _streams[streamId].recipientBalance);
+        emit PauseStream(
+            streamId,
+            msg.sender,
+            _streams[streamId].recipientBalance
+        );
     }
 
     function resumeStream(uint256 streamId) public streamExists(streamId) {
@@ -181,13 +181,18 @@ contract Fluid is IFluid, Ownable, ReentrancyGuard {
         emit ResumeStream(streamId, msg.sender, _streams[streamId].duration);
     }
 
-    function withdrawFromStream(uint256 streamId) public streamExists(streamId) {
+    function withdrawFromStream(
+        uint256 streamId
+    ) public streamExists(streamId) {
         uint256 recipientBalance = _streams[streamId].recipientBalance;
         _streams[streamId].recipientBalance = 0;
         emit WithdrawFromStream(streamId, msg.sender, recipientBalance);
     }
 
-    function extendStream(uint256 streamId, uint256 newStopTime) public streamExists(streamId) {
+    function extendStream(
+        uint256 streamId,
+        uint256 newStopTime
+    ) public streamExists(streamId) {
         _streams[streamId].stopTime = newStopTime;
     }
 
@@ -198,12 +203,12 @@ contract Fluid is IFluid, Ownable, ReentrancyGuard {
         emit CloseStream(streamId, msg.sender, recipientBalance, senderBalance);
     }
 
+    /* ============ SETTER FUNCTIONS ============ */
 
-
-
-          /* ============ SETTER FUNCTIONS ============ */
-
-    function setNewRecipient(uint256 streamId, address newRecipient) public streamExists(streamId) {
+    function setNewRecipient(
+        uint256 streamId,
+        address newRecipient
+    ) public streamExists(streamId) {
         _streams[streamId].recipient = newRecipient;
         emit SetNewRecipient(streamId, msg.sender, newRecipient);
     }

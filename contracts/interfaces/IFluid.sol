@@ -7,7 +7,7 @@ import {Struct} from "../libraries/Struct.sol";
  * @title IFluid
  * @notice Interface for the Fluid contract
  */
-interface IFluid {
+interface IFluid  {
     /**
      * @notice Creates a new stream
      * @dev This function is payable to allow for initial funding of the stream
@@ -65,4 +65,5 @@ interface IFluid {
      * @return The fee amount
      */
     function tokenFeeRate(address tokenAddress, uint256 feeRate) external view returns(uint256);
+
 }
