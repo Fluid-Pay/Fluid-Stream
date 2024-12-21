@@ -6,21 +6,21 @@ library Struct {
     /**
      *@notice Defines the roles an operator can have in relation to a stream.
    */
-    enum StreamOperatorRole {
-        None,       
-        Sender,
-        Recipient,
-        Both
-    }
+    // enum StreamOperatorRole {
+    //     None,       
+    //     Sender,
+    //     Recipient,
+    //     Both
+    // }
 
     /**
      * @notice Defines the settings for stream features, including who can pause, close, or modify the recipient of a stream.
      */
-    struct StreamFeature {
-        StreamOperatorRole pauseable;
-        StreamOperatorRole closeable;
-        StreamOperatorRole recipientModifiable;
-    }
+    // struct StreamFeature {
+    //     StreamOperatorRole pauseable;
+    //     StreamOperatorRole closeable;
+    //     StreamOperatorRole recipientModifiable;
+    // }
 
     /**
      *@notice  Represents a stream of funds.
@@ -36,10 +36,14 @@ library Struct {
         uint256 createdAt;
         bool isEntity;
         bool closed;
-        address onBehalfOf;
         bool autoClaim;
-        StreamFeature features;
-        CliffInfo cliffinfo;
+        // StreamFeature features;
+        uint256 cliffTime;
+        uint256 cliffAmount;
+        bool cliffDone;
+        bool isPaused;
+        uint256 autoClaimInterval;
+
     }
 
     /**
@@ -53,16 +57,22 @@ library Struct {
         uint256 startTime;
         uint256 stopTime;
         uint256 interval;
-        uint256 cliffTime;
-        uint256 cliffAmount;
         bool autoClaim;
         uint256 autoClaimInterval;
-        StreamFeature features;
-    }
-
-    struct CliffInfo{
+        // StreamFeature features;
         uint256 cliffTime;
         uint256 cliffAmount;
         bool cliffDone;
+        uint256 createAt;
+        bool isEntity;
+        bool isPaused;
+        bool closed;
+    
     }
+
+    // struct CliffInfo{
+    //     uint256 cliffTime;
+    //     uint256 cliffAmount;
+    //     bool cliffDone;
+    // }
 }

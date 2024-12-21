@@ -60,12 +60,12 @@ contract Fluid is Ownable, ReentrancyGuard, IFluid {
     event PauseStream(
         uint256 indexed streamId,
         address indexed operator,
-        uint256 recipientBalance
+        bool paused
     );
     event ResumeStream(
         uint256 indexed streamId,
         address indexed operator,
-        uint256 duration
+        bool paused
     );
     event SetNewRecipient(
         uint256 streamId,
@@ -123,7 +123,7 @@ contract Fluid is Ownable, ReentrancyGuard, IFluid {
 
     function createStream(
     Struct.CreateStreamParams calldata createParams
-) external payable override nonReentrant {
+) external payable  nonReentrant {
     require(_tokenAllowed[createParams.tokenAddress], "Token not registered");
     uint256 streamId = nextStreamId++;
         _streams[streamId] = Struct.Stream({
@@ -134,16 +134,21 @@ contract Fluid is Ownable, ReentrancyGuard, IFluid {
             startTime: createParams.startTime,
             stopTime: createParams.stopTime,
             interval: createParams.interval,
-            cliffTime: createParams.cliffTime,
+            cliffTime : createParams.cliffTime,
             cliffAmount: createParams.cliffAmount,
+            cliffDone: false,
             autoClaimInterval: createParams.autoClaimInterval,
-            createAt: block.timestamp,
+            createdAt: block.timestamp,
             autoClaim: createParams.autoClaim,
-            closed: false,
-            isEntity: true,
-            onBehalfOf: address(0x00)
+            isEntity : true,
+            closed :false ,
+            isPaused : false
+         
+
+
+            });
             
- } );
+
     emit CreateStream(
         streamId,
         msg.sender,
@@ -161,25 +166,26 @@ contract Fluid is Ownable, ReentrancyGuard, IFluid {
 }
 
     function pauseStream(uint256 streamId) public streamExists(streamId) onlyStreamOwner(streamId) {
-        _streams[streamId].paused = true;
+        _streams[streamId].isPaused= true;
         emit PauseStream(
             streamId,
             msg.sender,
-            _streams[streamId].recipientBalance
+           true
         );
     }
 
     function resumeStream(uint256 streamId) public streamExists(streamId) onlyStreamOwner(streamId) {
-        _streams[streamId].paused = false;
-        emit ResumeStream(streamId, msg.sender, _streams[streamId].duration);
+        _streams[streamId].isPaused= false;
+        emit ResumeStream(streamId, msg.sender, false);
     }
 
+            // to be implemented
     function withdrawFromStream(
-        uint256 streamId
+        uint256 streamId , uint256 amount
     ) public streamExists(streamId) onlyStreamOwner(streamId) {
-        uint256 recipientBalance = _streams[streamId].recipientBalance;
-        _streams[streamId].recipientBalance = 0;
-        emit WithdrawFromStream(streamId, msg.sender, recipientBalance);
+        // uint256 recipientBalance = _streams[streamId].recipientBalance;
+        // _streams[streamId].recipientBalance = 0;
+        // emit WithdrawFromStream(streamId, msg.sender, recipientBalance);
     }
 
     function extendStream(
@@ -189,11 +195,13 @@ contract Fluid is Ownable, ReentrancyGuard, IFluid {
         _streams[streamId].stopTime = newStopTime;
     }
 
+
+            
     function closeStream(uint256 streamId) public streamExists(streamId) onlyStreamOwner(streamId) {
-        uint256 recipientBalance = _streams[streamId].recipientBalance;
-        uint256 senderBalance = _streams[streamId].senderBalance;
-        _streams[streamId].isEntity = false;
-        emit CloseStream(streamId, msg.sender, recipientBalance, senderBalance);
+        // uint256 recipientBalance = _streams[streamId].recipientBalance;
+        // uint256 senderBalance = _streams[streamId].senderBalance;
+        // _streams[streamId].isEntity = false;
+        // emit CloseStream(streamId, msg.sender, recipientBalance, senderBalance);
     }
 
     function setNewRecipient(

@@ -8,14 +8,8 @@ import {Struct} from "../libraries/Struct.sol";
  * @notice Interface for the Fluid contract
  */
 interface IFluid  {
-    /**
-     * @notice Creates a new stream
-     * @dev This function is payable to allow for initial funding of the stream
-     * @param sender The address of the sender
-     * @param recipient The address of the recipient
-     * @param amount The amount of tokens to be streamed
-     */
-    function createStream(address sender, address recipient, uint256 amount) external payable;
+    
+    function createStream(Struct.CreateStreamParams calldata createParams) external  payable;
 
     /**
      * @notice Withdraws funds from a stream

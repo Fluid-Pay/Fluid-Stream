@@ -4,7 +4,7 @@
 
 ## **Contract  Deployment Address**
 
-- **Op-BNB Testnet*
+- *Op-BNB Testnet*
 
 | Contract Name            | Addresses                                  |
 | ------------------------ | ------------------------------------------ |
@@ -15,8 +15,8 @@
 
 - **Clone the repository**
 ```sh
-   git clone https://github.com/LikemDzokoto/Fluid-Streams.git 
-   cd Fluid-Streams
+   git clone https://github.com/LikemDzokoto/Fluid-Stream.git 
+   cd Fluid-Stream
 ```
 
 
