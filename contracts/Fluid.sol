@@ -17,10 +17,17 @@ contract Fluid is Ownable, ReentrancyGuard, IFluid {
     address public _autoClaimAccount;
     uint256 public _autoClaimFeeForOnce;
 
+
+     /* =========== MAPPING ============ */
+
+
     mapping(address => bool) private _tokenAllowed;
     mapping(address => uint256) private _tokenFeeRate;
     mapping(uint256 => Struct.Stream) private _streams;
 
+
+
+     /* =========== MODIFIERS ============ */
     modifier streamExists(uint256 streamId) {
         require(_streams[streamId].isEntity, "Stream does not exist");
         _;
@@ -30,6 +37,9 @@ contract Fluid is Ownable, ReentrancyGuard, IFluid {
         require(msg.sender == _streams[streamId].sender, "Only the stream owner can call this function");
         _;
     }
+
+
+     /* =========== EVENTS ============ */
 
     event TokenRegistered(address indexed tokenAddress, uint256 feeRate);
     event CreateStream(
@@ -73,6 +83,9 @@ contract Fluid is Ownable, ReentrancyGuard, IFluid {
         address newRecipient
     );
 
+
+     /* =========== Constructor ============ */
+
     constructor(
         address owner_,
         address feeRecipient_,
@@ -85,6 +98,9 @@ contract Fluid is Ownable, ReentrancyGuard, IFluid {
         _autoClaimFeeForOnce = autoClaimFeeForOnce_;
         nextStreamId = 100000;
     }
+
+
+     /* =========== VIEW FUNCTIONS ============ */
 
     function tokenFeeRate(
         address tokenAddress
@@ -111,6 +127,10 @@ contract Fluid is Ownable, ReentrancyGuard, IFluid {
         return _streams[streamId];
     }
 
+
+
+     /* =========== MAIN FUNCTIONS ============ */
+
     function tokenRegister(
         address tokenAddress,
         uint256 feeRate
@@ -121,11 +141,49 @@ contract Fluid is Ownable, ReentrancyGuard, IFluid {
         emit TokenRegistered(tokenAddress, feeRate);
     }
 
+    
+  
+
+    function deltaOf(uint256 streamId) public view streamExists(streamId) returns(uint256 delta){
+         Struct.Stream memory stream = _streams[streamId];
+
+         if(block.timestamp <  stream.startTime){
+            return 0;
+         }
+
+         //calculate the time elapsed since the startTime 
+         uint256 timeElapsed = block.timestamp - stream.startTime;
+
+        //calculate the total duration of the stream 
+        uint256 totalDuration = stream.stopTime - stream.startTime;
+
+
+    // Calculate delta based on intervals
+        if (timeElapsed > totalDuration) {
+            delta = totalDuration / stream.interval;
+        } else {
+            delta = timeElapsed / stream.interval;
+        }
+        }
+
+
     function createStream(
     Struct.CreateStreamParams calldata createParams
 ) external payable  nonReentrant {
     require(_tokenAllowed[createParams.tokenAddress], "Token not registered");
+    require(createParams.stopTime > createParams.startTime, "Stop time must be after start time");
+    require(createParams.deposit > 0, "Deposit must be greater than 0");
+    
     uint256 streamId = nextStreamId++;
+
+    IERC20 token = IERC20(createParams.tokenAddress);
+
+    //check if the sender has enough balance
+    require(token.balanceOf(msg.sender) >= createParams.deposit ,"balance of the sender is  not enough");
+
+    //transfer tokens to the contract 
+    token.transferFrom(msg.sender, address(this), createParams.deposit);
+    
         _streams[streamId] = Struct.Stream({
             sender: createParams.sender,
             recipient: createParams.recipient,
@@ -165,6 +223,9 @@ contract Fluid is Ownable, ReentrancyGuard, IFluid {
     );
 }
 
+
+
+
     function pauseStream(uint256 streamId) public streamExists(streamId) onlyStreamOwner(streamId) {
         _streams[streamId].isPaused= true;
         emit PauseStream(
@@ -179,14 +240,20 @@ contract Fluid is Ownable, ReentrancyGuard, IFluid {
         emit ResumeStream(streamId, msg.sender, false);
     }
 
-            // to be implemented
-    function withdrawFromStream(
-        uint256 streamId , uint256 amount
-    ) public streamExists(streamId) onlyStreamOwner(streamId) {
-        // uint256 recipientBalance = _streams[streamId].recipientBalance;
-        // _streams[streamId].recipientBalance = 0;
-        // emit WithdrawFromStream(streamId, msg.sender, recipientBalance);
+    // to be implemented
+    function withdrawFromStream( uint256 streamId , uint256 amount  ) public streamExists(streamId) onlyStreamOwner(streamId) {
+        // Struct.Stream storage stream = _streams[streamId];
+        // require(!stream.isPaused,"Stream is paused");
+        // require(block.timestamp >= stream.startTime,"Stream has not started");       
+        // require(block.timestamp <= stream.stopTime,"Stream has ended");
+
+
+
+
+
     }
+
+
 
     function extendStream(
         uint256 streamId,
