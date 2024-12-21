@@ -8,6 +8,7 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import {IFluid} from "./interfaces/IFluid.sol";
 import {Struct} from "./libraries/Struct.sol";
+import {Helpers} from "./libraries/Helpers.sol";
 
 contract Fluid is Ownable, ReentrancyGuard, IFluid {
     using SafeERC20 for IERC20;
