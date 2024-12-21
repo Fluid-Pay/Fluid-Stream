@@ -241,16 +241,32 @@ contract Fluid is Ownable, ReentrancyGuard, IFluid {
         emit ResumeStream(streamId, msg.sender, false);
     }
 
-    // to be implemented
     function withdrawFromStream( uint256 streamId , uint256 amount  ) public streamExists(streamId) onlyStreamOwner(streamId) {
-        // Struct.Stream storage stream = _streams[streamId];
-        // require(!stream.isPaused,"Stream is paused");
-        // require(block.timestamp >= stream.startTime,"Stream has not started");       
-        // require(block.timestamp <= stream.stopTime,"Stream has ended");
+        Struct.Stream storage stream = _streams[streamId];
+        require(!stream.isPaused,"Stream is paused");
+        require(block.timestamp >= stream.startTime,"Stream has not started");       
+        require(block.timestamp <= stream.stopTime,"Stream has ended");
 
+       
+        uint256 deltaIntervals = deltaOf(streamId); 
 
+        uint256 withdrawableAmount = Helpers.calculateWithdrawableAmount(stream, deltaIntervals);
 
+        require(amount <= withdrawableAmount, "Amount exceeds what can be withdrawn");
 
+        // Update the stream's deposit
+        stream.deposit -= amount;
+
+        // Transfer tokens to the recipient
+        IERC20(stream.tokenAddress).safeTransfer(stream.recipient, amount);
+        
+        // Update cliffDone if necessary
+        if (block.timestamp >= stream.cliffTime && !stream.cliffDone) {
+            stream.cliffDone = true;
+        }
+
+        emit WithdrawFromStream(streamId, msg.sender, amount);
+        
 
     }
 
@@ -266,10 +282,19 @@ contract Fluid is Ownable, ReentrancyGuard, IFluid {
 
             
     function closeStream(uint256 streamId) public streamExists(streamId) onlyStreamOwner(streamId) {
-        // uint256 recipientBalance = _streams[streamId].recipientBalance;
-        // uint256 senderBalance = _streams[streamId].senderBalance;
-        // _streams[streamId].isEntity = false;
-        // emit CloseStream(streamId, msg.sender, recipientBalance, senderBalance);
+        Struct.Stream storage stream = _streams[streamId];
+
+        uint256 deltaIntervals = deltaOf(streamId);
+        uint256 remainingAmount = Helpers.calculateRemainingAmount(stream, deltaIntervals);
+
+        // Transfer remaining tokens to recipient
+        IERC20(stream.tokenAddress).safeTransfer(stream.recipient, remainingAmount);
+
+        // Reset stream
+        stream.isEntity = false;
+        emit CloseStream(streamId, msg.sender, remainingAmount, 0); // Assuming sender gets nothing on close
+
+       
     }
 
     function setNewRecipient(
