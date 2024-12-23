@@ -4,6 +4,8 @@ import * as dotenv from "dotenv";
 import { network } from "hardhat";
 import "hardhat-deploy";
 
+require("@nomicfoundation/hardhat-foundry");
+
 dotenv.config();
 
 
