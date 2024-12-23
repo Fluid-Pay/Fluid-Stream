@@ -168,6 +168,8 @@ contract Fluid is Ownable, ReentrancyGuard, IFluid {
         }
 
 
+    // why is this function payable?
+    // is there any internal storage variable tracking streamId
     function createStream(
     Struct.CreateStreamParams calldata createParams
 ) external payable  nonReentrant {
@@ -287,11 +289,14 @@ contract Fluid is Ownable, ReentrancyGuard, IFluid {
         uint256 deltaIntervals = deltaOf(streamId);
         uint256 remainingAmount = Helpers.calculateRemainingAmount(stream, deltaIntervals);
 
+        // why not deduct from deposit before sending as you did in withdrawal | closed streams do not hold any balance
+
         // Transfer remaining tokens to recipient
         IERC20(stream.tokenAddress).safeTransfer(stream.recipient, remainingAmount);
 
         // Reset stream
         stream.isEntity = false;
+        // set CLosed to true
         emit CloseStream(streamId, msg.sender, remainingAmount, 0); // Assuming sender gets nothing on close
 
        
@@ -311,5 +316,25 @@ contract Fluid is Ownable, ReentrancyGuard, IFluid {
 
     function setAutoFeeForOnce(uint256 newAutoFeeForOnce) public onlyOwner {
         _autoClaimFeeForOnce = newAutoFeeForOnce;
+    }
+
+    function streamInfo(uint256 streaId) external view returns(address, uint256){
+        address sender = _streams[streaId].sender;
+        uint256 deposited = _streams[streaId].deposit;
+
+        return (sender, deposited);
+    }
+
+    function getPauseStatus(uint256 streaId) external view returns(bool status){
+         status = _streams[streaId].isPaused;
+    }
+
+    function getStopTime(uint256 streaId) external view returns(uint stopTime){
+        stopTime = _streams[streaId].stopTime;
+    }
+
+    function getStreamClose(uint256 streaId) external view returns(bool close, bool entity){
+        close = _streams[streaId].closed;
+        entity = _streams[streaId].isEntity;
     }
 }
