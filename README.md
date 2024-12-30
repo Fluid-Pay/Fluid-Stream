@@ -21,7 +21,7 @@
 
 
 - **Install the project's packages**
-```sh
+```s
     npm install
 ```
 
