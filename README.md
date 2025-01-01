@@ -11,13 +11,15 @@ A Solidity smart contract for managing token streaming with features like cliff 
 - Stream ownership and recipient management
 - Fee system for registered tokens
 
-  # **Contract  Deployment Address**
+  ## **Contract  Deployment Address**
 
 
 
 | Contract Name            | Addresses                                  |Network                                  |
 | ------------------------ | ------------------------------------------ |------------------------------------------
 |  Fluid.sol               |https://testnet.bscscan.com/address/0xFF450760F160A60791d7D13F11FdF698a862D225                                           |  BSC Testnet                                         
+|   Fluid.sol               |                                           | OpBNB Testnet                                         
+
 
 
 ## **Setup**
